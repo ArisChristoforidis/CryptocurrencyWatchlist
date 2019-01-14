@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <SwitchPreferenceCompat
+        app:key = "forceGraphLoad"
+        app:title = "Force download graphs"
+        app:summary = "Download graph data each time a coin is selected."
+        />
+
+    <Preference
+        android:selectable="true"
+        android:enabled="true"
+        android:key="about"
+        android:title="About"
+        android:summary="Made by Aristeidis Christoforidis" />
+
+</PreferenceScreen>

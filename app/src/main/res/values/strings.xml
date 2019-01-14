@@ -1,0 +1,81 @@
+<resources>
+    <string name="app_name">Cryptocurrency Watchlist</string>
+
+    <!--Settings Strings-->
+    <string name="action_settings">Settings</string>
+    <string name="action_signOut">Sign out</string>
+
+    <string name="title_activity_coin_details">CoinDetailsActivity</string>
+
+    <!--For general use-->
+    <string name="not_available_string">N/A</string>
+
+    <!--Headers for coin_list_fragment.xml-->
+    <string name="header_rank">#</string>
+    <string name="header_name">Name</string>
+    <string name="header_price">Price</string>
+    <string name="header_change">24h</string>
+
+    <!--PlaceHolders for coin_list_item.xml-->
+    <string name="item_rank_placeholder">1</string>
+    <string name="item_name_placeholder">ABC</string>
+    <string name="item_price_placeholder">$1234</string>
+
+    <!--PlaceHolders for activity_coin_details.xml-->
+    <string name="coin_name_placeholder">Coin Name</string>
+
+    <!--Labels for activity_coin_details.xml-->
+    <string name="general_info_label">General Information</string>
+    <string name="price_label">Price</string>
+    <string name="supply_label">Supply</string>
+    <string name="max_supply_label">Max Supply</string>
+    <string name="market_cap_label">Market Cap</string>
+    <string name="trading_volume_24hr_label">Trading Volume(24h)</string>
+    <string name="vwap_24hr_label">VWAP(24h)</string>
+    <string name="line_graph_label">Line Graph</string>
+    <string name="change_label">Change</string>
+    <string name="hourly_change_label">Hourly</string>
+    <string name="daily_change_label">Daily</string>
+    <string name="weekly_change_label">Weekly</string>
+    <string name="monthly_change_label">Monthly</string>
+    <string name="alerts_label">Alerts</string>
+
+    <!--Chart options for activity_coin_details.xml-->
+    <string name="hour_chart_option">Hour</string>
+    <string name="day_chart_option">Day</string>
+    <string name="week_chart_option">Week</string>
+    <string name="month_chart_option">Month</string>
+
+    <!--Hints & labels for dialog_new_alert.xml-->
+    <string name="create_new_alert_label">Create new alert</string>
+    <string name="title_hint">Title</string>
+    <string name="lower_limit_hint">Lower Limit</string>
+    <string name="upper_limit_hint">Upper Limit</string>
+
+    <!--Labels for alert_list_item.xml-->
+    <string name="lower_limit_value_placeholder">$500</string>
+    <string name="upper_limit_value_placeholder">$1000</string>
+    <string name="lower_limit_label">Lower Limit</string>
+    <string name="upper_limit_label">Upper Limit</string>
+    <string name="coin_symbol_placeholder">ABC</string>
+    <string name="alert_name_placeholder">My alert</string>
+
+    <!--Misc-->
+    <string name="save_coin_content_description">Save Coin</string>
+    <string name="delete_alert_content_description">Delete Alert</string>
+    <string name="marker_placeholder">12345.6</string>
+    <string name="filter_saved">Filter Saved</string>
+
+    <!--Placeholders for news_list_item.xml -->
+    <string name="news_title_placeholder">News Title</string>
+    <string name="author_name_placeholder">Author Name</string>
+    <string name="news_source_placeholder">Source: ABC.com</string>
+    <string name="news_description_placeholder">News Description</string>
+    <string name="news_image_placeholder">News Image</string>
+    <string name="title_activity_settings">SettingsActivity</string>
+    <string name="sign_in_to_continue_label">Sign in to continue.</string>
+    <string name="app_title">Cryptocurrency Watchlist</string>
+    <string name="image_icon">logo</string>
+
+
+</resources>
