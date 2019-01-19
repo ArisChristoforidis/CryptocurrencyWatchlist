@@ -16,8 +16,6 @@ import java.util.List;
 
 public class AlertListViewAdapter extends RecyclerView.Adapter<AlertListViewAdapter.AlertListRecyclerViewHolder>{
 
-    private static final String TAG = "AlertListAdapter";
-
     private List<CoinAlert> mData = new ArrayList<>();
 
     private AlertActionListener mAlertActionListener;
