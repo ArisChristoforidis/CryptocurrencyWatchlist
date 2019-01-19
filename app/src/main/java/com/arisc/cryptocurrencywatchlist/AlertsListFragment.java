@@ -33,9 +33,7 @@ public class AlertsListFragment extends Fragment implements  AlertActionListener
 
     private View mView;
 
-    private RecyclerView mRecyclerView;
     private AlertListViewAdapter mAdapter;
-    private RecyclerView.LayoutManager mLayoutManager;
 
     private UserAccount mSignedInAccount;
     List<CoinAlert> mAlerts;
@@ -49,6 +47,7 @@ public class AlertsListFragment extends Fragment implements  AlertActionListener
         setupRecyclerView();
         setAlertList();
 
+        //Register the broadcast receiver when the view is created.
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(receiver,new IntentFilter("update_list"));
 
         return mView;
@@ -57,31 +56,27 @@ public class AlertsListFragment extends Fragment implements  AlertActionListener
     @Override
     public void onResume() {
         super.onResume();
-        Log.d(TAG,"AlertListFragment onResume");
+        /*This is needed cause greenDao caches already queried lists and doesn't update them unless
+         told to do so.*/
         mSignedInAccount.resetAlerts();
         setAlertList();
     }
 
     private void setupRecyclerView() {
-        mRecyclerView = mView.findViewById(R.id.alertList);
-
-        mLayoutManager = new LinearLayoutManager(getActivity());
-
-        mRecyclerView.setLayoutManager(mLayoutManager);
+        RecyclerView recyclerView = mView.findViewById(R.id.alertList);
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getActivity());
+        recyclerView.setLayoutManager(layoutManager);
 
         mAdapter = new AlertListViewAdapter(this);
-        mRecyclerView.setAdapter(mAdapter);
+        recyclerView.setAdapter(mAdapter);
     }
 
     private void setAlertList(){
-
         if(mSignedInAccount == null){
             mSignedInAccount = GoogleSignInManager.getSignedAccount();
         }
 
         mAlerts = mSignedInAccount.getAlerts();
-
-
         mAdapter.setData(mAlerts);
     }
 
@@ -94,10 +89,19 @@ public class AlertsListFragment extends Fragment implements  AlertActionListener
         setAlertList();
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        //Unregister the broadcast receiver when the user is about to leave the app.
+        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(receiver);
+    }
+
     private BroadcastReceiver receiver  = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            Log.d(TAG,"Received a broadcast.");
+            /*The jobService communicates with this fragment through this broadcastReceiver.
+            If an update on the alerts happens while the user has the app open, this onReceive event
+            will be triggered.*/
             mSignedInAccount.resetAlerts();
             setAlertList();
         }

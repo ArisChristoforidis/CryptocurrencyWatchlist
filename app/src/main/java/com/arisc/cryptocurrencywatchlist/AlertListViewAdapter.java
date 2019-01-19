@@ -18,10 +18,9 @@ public class AlertListViewAdapter extends RecyclerView.Adapter<AlertListViewAdap
 
     private static final String TAG = "AlertListAdapter";
 
-    List<CoinAlert> mData = new ArrayList<>();
+    private List<CoinAlert> mData = new ArrayList<>();
 
-
-    AlertActionListener mAlertActionListener;
+    private AlertActionListener mAlertActionListener;
 
     public AlertListViewAdapter(AlertActionListener alertActionListener){
         mAlertActionListener = alertActionListener;
@@ -31,7 +30,7 @@ public class AlertListViewAdapter extends RecyclerView.Adapter<AlertListViewAdap
     @Override
     public AlertListRecyclerViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.alert_list_item,parent,false);
-        AlertListRecyclerViewHolder vh = new AlertListRecyclerViewHolder(itemView,this,mAlertActionListener);
+        AlertListRecyclerViewHolder vh = new AlertListRecyclerViewHolder(itemView,mAlertActionListener);
 
         return vh;
     }
@@ -47,28 +46,12 @@ public class AlertListViewAdapter extends RecyclerView.Adapter<AlertListViewAdap
         return mData.size();
     }
 
-    public void deleteItem(int position){
-        try{
-            mData.remove(position);
-            notifyDataSetChanged();
-        }catch(IndexOutOfBoundsException e){
-            Log.e(TAG,"Tried to remove an element that does not exist.");
-        }
-
-    }
-
     public void setData(List<CoinAlert> data){
-        Log.d(TAG,"setData was entered " + data.size());
-
-
         this.mData = data;
         notifyDataSetChanged();
     }
 
     public static class AlertListRecyclerViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-
-
-        private AlertListViewAdapter mAdapter;
 
         private final TextView mTxtTitle;
         private final TextView mTxtCoinSymbol;
@@ -78,10 +61,8 @@ public class AlertListViewAdapter extends RecyclerView.Adapter<AlertListViewAdap
 
         AlertActionListener mAlertActionListener;
 
-        public AlertListRecyclerViewHolder(View view,AlertListViewAdapter adapter,AlertActionListener alertActionListener) {
+        public AlertListRecyclerViewHolder(View view,AlertActionListener alertActionListener) {
             super(view);
-
-            mAdapter = adapter;
 
             mTxtTitle = view.findViewById(R.id.txtAlertTitle);
             mTxtCoinSymbol = view.findViewById(R.id.txtAlertCoinSymbol);
@@ -95,7 +76,6 @@ public class AlertListViewAdapter extends RecyclerView.Adapter<AlertListViewAdap
         }
 
         public void setValues(CoinAlert alert){
-
             String title = alert.getAlertTitle();
             mTxtTitle.setText(title);
 
@@ -123,7 +103,6 @@ public class AlertListViewAdapter extends RecyclerView.Adapter<AlertListViewAdap
         @Override
         public void onClick(View v) {
             mAlertActionListener.onAlertDelete(getAdapterPosition());
-            //mAdapter.deleteItem(getAdapterPosition());
         }
     }
 

@@ -24,11 +24,12 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
 
+        //Used for the database handling.
         DaoMaster.DevOpenHelper helper = new DaoMaster.DevOpenHelper(this,"coins-db");
         Database db = helper.getWritableDb();
-
         mDaoSession = new DaoMaster(db).newSession();
 
+        //Creates/Updates the jobService one time when the app opens.
         scheduleNotifications();
     }
 
@@ -43,8 +44,11 @@ public class App extends Application {
 
         ComponentName componentName = new ComponentName(this,NotificationJobService.class);
         JobInfo jobInfo = new JobInfo.Builder(1,componentName)
-                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_UNMETERED)
+                //Run the service when connected to any type of network(Change to NETWORK_TYPE_UNMETERED for wifi)
+                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                //If the user reboots, the service is lost.(This is done on purpose,as a safety measure)
                 .setPersisted(false)
+                //Run the jobService every 15 minutes.
                 .setPeriodic(period)
                 .build();
 

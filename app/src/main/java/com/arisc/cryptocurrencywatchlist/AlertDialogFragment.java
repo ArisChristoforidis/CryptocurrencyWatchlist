@@ -23,8 +23,6 @@ public class AlertDialogFragment extends DialogFragment {
 
     private static final String TAG = "AlertDialogFragment";
 
-    private final String positiveButtonText = "Create";
-    private final String negativeButtonText = "Cancel";
 
     AlertDialog.Builder mBuilder;
     AlertDialog mInstance;
@@ -32,7 +30,6 @@ public class AlertDialogFragment extends DialogFragment {
     EditText txtAlertTitle;
     EditText txtLowerLimit;
     EditText txtUpperLimit;
-    TextView txtPrice;
     private boolean mLowerLimitHasText,mUpperLimitHasText;
 
     private Double mPrice;
@@ -46,8 +43,8 @@ public class AlertDialogFragment extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         mBuilder = new AlertDialog.Builder(getActivity());
         mParentActivity = getActivity();
-        LayoutInflater inflater = mParentActivity.getLayoutInflater();
 
+        LayoutInflater inflater = mParentActivity.getLayoutInflater();
         mView = inflater.inflate(R.layout.dialog_new_alert,null);
         mBuilder.setView(mView);
 
@@ -60,6 +57,7 @@ public class AlertDialogFragment extends DialogFragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        //Get the price from the bundle so that it can be displayed in the dialog fragment.
         Bundle args = getArguments();
         mPrice = args.getDouble(priceKey);
     }
@@ -83,22 +81,21 @@ public class AlertDialogFragment extends DialogFragment {
 
     public void setupViewsAndEvents(){
         txtAlertTitle = mView.findViewById(R.id.etxtDialogAlertTitle);
-        setupEditTextWatchers();
 
-        txtPrice = mView.findViewById(R.id.txtAlertCurrentPrice);
+        //Setup the price textView.
+        TextView txtPrice = mView.findViewById(R.id.txtAlertCurrentPrice);
         if(mPrice != null){
             String price = "$" + Utils.doubleToString(mPrice);
             txtPrice.setText(price);
         }else{
-            txtPrice.setText("N/A");
+            txtPrice.setText(R.string.not_available_string);
         }
+
+        setupEditTextWatchers();
 
     }
 
     private void setupEditTextWatchers() {
-    //The user needs to specify at least one upper or lower limit,if not both.
-
-
         txtLowerLimit = mView.findViewById(R.id.etxtDialogAlertLowerLimit);
         txtUpperLimit = mView.findViewById(R.id.etxtDialogAlertUpperLimit);
 
@@ -108,6 +105,7 @@ public class AlertDialogFragment extends DialogFragment {
         final Button positiveButton = mInstance.getButton(DialogInterface.BUTTON_POSITIVE);
         positiveButton.setEnabled(false);
 
+        //The user needs to specify at least one upper or lower limit,if not both.
         txtLowerLimit.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -159,6 +157,10 @@ public class AlertDialogFragment extends DialogFragment {
 
 
     private void setupButtons(){
+        final String positiveButtonText = "Create";
+        final String negativeButtonText = "Cancel";
+
+        //Sets up positive and negative button listeners.
         mBuilder.setPositiveButton(positiveButtonText, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
