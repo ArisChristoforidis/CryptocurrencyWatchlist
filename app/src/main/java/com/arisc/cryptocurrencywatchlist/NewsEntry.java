@@ -1,6 +1,8 @@
 package com.arisc.cryptocurrencywatchlist;
 
 public class NewsEntry {
+
+    //Getters/Setters.
     private String mSource;
     private String mAuthor;
     private String mTitle;

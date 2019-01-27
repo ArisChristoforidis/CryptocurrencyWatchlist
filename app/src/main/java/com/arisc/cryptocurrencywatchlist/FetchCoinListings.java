@@ -32,7 +32,6 @@ public class FetchCoinListings extends AsyncTask<String,Integer,List<CoinListing
 
     public FetchCoinListings(CoinListFragment fragment){
         this.mFragment = fragment;
-        //This probably works.
         this.mCoinListReceivedListener = fragment;
     }
 
@@ -44,9 +43,11 @@ public class FetchCoinListings extends AsyncTask<String,Integer,List<CoinListing
     protected List<CoinListing> doInBackground(String... strings) {
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
+        //No api key needed for this.
         String baseUrl = "https://api.coincap.io/v2/assets?limit=2000";
         try {
-            Uri builtURI =Uri.parse(baseUrl);
+            //Standard procedure.
+            Uri builtURI = Uri.parse(baseUrl);
 
             URL url = new URL(builtURI.toString());
 
@@ -69,7 +70,6 @@ public class FetchCoinListings extends AsyncTask<String,Integer,List<CoinListing
             if(buffer.length() == 0){
                 return new ArrayList<>();
             }
-
 
             String JSONString = buffer.toString();
             return getCoinListingsFromJSON(JSONString);
@@ -96,8 +96,6 @@ public class FetchCoinListings extends AsyncTask<String,Integer,List<CoinListing
                 }
             }
         }
-
-
     }
 
     private List<CoinListing> getCoinListingsFromJSON(String jsonString) throws JSONException {
@@ -122,6 +120,7 @@ public class FetchCoinListings extends AsyncTask<String,Integer,List<CoinListing
 
         int listSize = topCoinsList.length();
         if(mFragment != null){
+            //Inform the progressbar of the list size(on the first fetch).
             mFragment.initializeProgressBar(listSize);
         }
 
@@ -173,7 +172,7 @@ public class FetchCoinListings extends AsyncTask<String,Integer,List<CoinListing
     @Override
     protected void onProgressUpdate(Integer... values) {
         if(mFragment == null) return;
-
+        //Update progress bar.
         mFragment.updateProgress(values[0]);
     }
     

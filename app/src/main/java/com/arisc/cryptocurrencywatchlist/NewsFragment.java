@@ -30,7 +30,9 @@ public class NewsFragment extends Fragment {
         Log.d(TAG,"onCreateView");
         mView = inflater.inflate(R.layout.news_list_fragment,container,false);
 
-        setupRecyclerView();
+        //Setup news list.
+        setupNewsRecyclerView();
+        //Setup refresh layout.
         setupRefreshLayout();
 
         //Run fetch news.
@@ -39,7 +41,7 @@ public class NewsFragment extends Fragment {
         return mView;
     }
 
-    private void setupRecyclerView() {
+    private void setupNewsRecyclerView() {
         RecyclerView recyclerView = mView.findViewById(R.id.newsList);
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
@@ -63,11 +65,10 @@ public class NewsFragment extends Fragment {
     }
 
     public void updateNewsEntries(List<NewsEntry> newsEntries) {
-
+        //Update the news.
         if(mSwipeRefreshLayout.isRefreshing()) mSwipeRefreshLayout.setRefreshing(false);
 
         mEntries = newsEntries;
         mAdapter.setData(mEntries);
-
     }
 }

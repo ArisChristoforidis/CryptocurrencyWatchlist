@@ -65,7 +65,6 @@ public class AlertDialogFragment extends DialogFragment {
     @Override
     public void onStart() {
         super.onStart();
-
         setupViewsAndEvents();
     }
 
@@ -155,7 +154,6 @@ public class AlertDialogFragment extends DialogFragment {
 
     }
 
-
     private void setupButtons(){
         final String positiveButtonText = "Create";
         final String negativeButtonText = "Cancel";
@@ -179,7 +177,6 @@ public class AlertDialogFragment extends DialogFragment {
         });
 
     }
-
 
     public interface OnCreateAlertListener{
         void onAlertCreated(String alertTitle,String lowerLimit,String upperLimit);

@@ -19,7 +19,6 @@ public class CoinListRecyclerViewAdapter extends RecyclerView.Adapter<CoinListRe
 
     private static final String TAG = "CoinListAdapter";
 
-
     private List<CoinListing> mData = new ArrayList<>();
 
     @NonNull
@@ -80,8 +79,6 @@ public class CoinListRecyclerViewAdapter extends RecyclerView.Adapter<CoinListRe
         private final TextView mTxtCoinPrice;
         private final TextView mTxtChangePercent24Hr;
 
-
-
         private final int valuePositive, valueNegative, valueNeutral;
 
         public CoinListRecyclerViewHolder(View view){
@@ -98,31 +95,31 @@ public class CoinListRecyclerViewAdapter extends RecyclerView.Adapter<CoinListRe
         }
 
         public void setValues(CoinListing cl){
+            //Set values for each coinListing.
 
+            //Rank.
             String rank = String.valueOf(cl.getRank());
             mCoinRank.setText(rank);
 
+            //Name.
             String name = cl.getName();
             mTxtCoinName.setText(name);
 
+            //Symbol.
             String symbol = cl.getSymbol();
             mTxtCoinSymbol.setText(symbol);
 
+            //Price.
             double coinPrice = cl.getPrice();
             String coinPriceString = "$" + Utils.doubleToString(coinPrice);
             mTxtCoinPrice.setText(coinPriceString);
 
+            //Change Percentage for 24 Hours.
             DecimalFormat decimalFormat = Utils.getPercentageChangeDecimalFormat();
-
             Double changePercent24Hr = cl.getChangePercent24Hr();
-            //Log.d(TAG,"Reached setValues.");
-            if(cl.getSymbol().equals("DEW")){
-                Log.d(TAG,"DEW:" + cl.getChangePercent24Hr());
-            }
             if(changePercent24Hr != null){
-                String strChangePercent24Hr;
-                strChangePercent24Hr = decimalFormat.format(changePercent24Hr);
-                mTxtChangePercent24Hr.setText(strChangePercent24Hr + "%");
+                String strChangePercent24Hr = decimalFormat.format(changePercent24Hr) + "%";
+                mTxtChangePercent24Hr.setText(strChangePercent24Hr);
                 if(changePercent24Hr > 0){
                     mTxtChangePercent24Hr.setTextColor(valuePositive);
                 }else if(changePercent24Hr < 0){
@@ -130,14 +127,12 @@ public class CoinListRecyclerViewAdapter extends RecyclerView.Adapter<CoinListRe
                 }
 
             }else{
+                //If not found,change value is equal to N/A.
                 mTxtChangePercent24Hr.setTextColor(valueNeutral);
-                mTxtChangePercent24Hr.setText("N/A");
+                mTxtChangePercent24Hr.setText(R.string.not_available_string);
             }
-
         }
 
-
     }
-
 
 }

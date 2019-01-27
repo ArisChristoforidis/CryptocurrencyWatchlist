@@ -16,9 +16,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG = "MainActivity";
-
-    private SectionsPagerAdapter mSectionsPagerAdapter;
     private ViewPager mViewPager;
 
     private AlertsListFragment mAlertListFragment = new AlertsListFragment();
@@ -28,12 +25,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-
+        //Setup the tabs.
         mViewPager = findViewById(R.id.container);
         setupViewPager(mViewPager);
 
@@ -41,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
         mViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
         tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(mViewPager));
 
+        //Set up the "Saved Coins Filter" button.
         final ImageView savedCoin = toolbar.findViewById(R.id.filterSaved);
         savedCoin.setOnClickListener(mCoinListFragment);
         mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -51,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onPageSelected(int position) {
+                //Only show this when the middle tab(the CoinListFragment) is selected.
                 if(position != 1){
                     savedCoin.setVisibility(View.INVISIBLE);
                 }else{
@@ -64,13 +61,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
         //Start on the middle tab;
         mViewPager.setCurrentItem(1);
-
-
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -81,7 +74,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
@@ -99,24 +91,16 @@ public class MainActivity extends AppCompatActivity {
                         //I think this is redundant.
                         return true;
         }
-
-
         return super.onOptionsItemSelected(item);
     }
 
     private void setupViewPager(ViewPager viewPager){
         SectionsPagerAdapter adapter = new SectionsPagerAdapter(getSupportFragmentManager());
+        //I want the tabs in this order.
         adapter.addFragment(mAlertListFragment);
         adapter.addFragment(mCoinListFragment);
         adapter.addFragment(new NewsFragment());
         viewPager.setAdapter(adapter);
     }
 
-    public CoinListFragment getCoinListFragment() {
-        return mCoinListFragment;
-    }
-
-    public AlertsListFragment getAlertListFragment() {
-        return mAlertListFragment;
-    }
 }

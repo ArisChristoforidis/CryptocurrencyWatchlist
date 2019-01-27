@@ -9,20 +9,14 @@ import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.utils.MPPointF;
 
 public class CustomMarker extends MarkerView {
-    /**
-     * Constructor. Sets up the MarkerView with a custom layout resource.
-     *
-     * @param context
-     * @param layoutResource the layout resource to use for the MarkerView
-     */
+    //Disabled cause it doesn't look good.
+
     private TextView mMarkerTextView;
     private MPPointF mOffSet;
 
     public CustomMarker(Context context, int layoutResource) {
         super(context, layoutResource);
-
         mMarkerTextView = findViewById(R.id.txtMarker);
-
     }
 
     @Override
@@ -30,19 +24,16 @@ public class CustomMarker extends MarkerView {
         float value = e.getY();
         String strValue = Utils.doubleToString(Double.valueOf(value));
         mMarkerTextView.setText("$"+strValue);
-
         super.refreshContent(e, highlight);
     }
 
 
     @Override
     public MPPointF getOffset() {
-
         if(mOffSet == null) {
             // center the marker horizontally and vertically
             mOffSet = new MPPointF(-(getWidth() / 2), -getHeight());
         }
-
         return mOffSet;
     }
 }

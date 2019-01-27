@@ -31,11 +31,12 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+        //Create a client.
         mGoogleSignInClient = GoogleSignInManager.createGoogleSignInClient(this);
 
+        //Get the google sign in button.
         mSignInButton = findViewById(R.id.btnSignIn);
         mSignInButton.setSize(SignInButton.SIZE_WIDE);
-
         mSignInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -48,7 +49,6 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-
         //Check if the user is already signed in.
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
         if(account != null){
@@ -59,50 +59,42 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
+        //Get signed account.
         if(requestCode == RC_SIGN_IN){
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             handleSignInResult(task);
         }
-
     }
 
     private void handleSignInResult(Task<GoogleSignInAccount> completedTask){
         try {
+            //Get google account.(This is not the type of account used in the other classes).
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
             onSuccessfulUserLogin(account.getId());
         } catch (ApiException e) {
             Log.d(TAG, "ApiException(handleSignInResult). Code: " + e.getStatusCode());
             e.printStackTrace();
         }
-
     }
 
     private void onSuccessfulUserLogin(String id){
-
         Log.d(TAG,"onSuccessfulUserLogin:User id is " + id);
 
-        //Put them in the database
         DaoSession daoSession = ((App)getApplication()).getDaoSession();
         UserAccountDao userAccountDao = daoSession.getUserAccountDao();
 
         QueryBuilder<UserAccount> queryBuilder = userAccountDao.queryBuilder();
-
         queryBuilder.where(UserAccountDao.Properties.UserId.eq(id));
-
         UserAccount account = queryBuilder.unique();
 
+        //If this is a new user,put them in the database.
         if(account == null){
             account = new UserAccount();
             account.setUserId(id);
             userAccountDao.insert(account);
         }
 
-        if(account != null){
-            Log.d(TAG,"onSuccessfulUserLogin:Account is not null");
-        }else{
-            Log.d(TAG,"onSuccessfulUserLogin:Account is null");
-        }
+        //This is what all the other classes will reference.
         GoogleSignInManager.setSignedAccount(account);
         //Start the activity.
         startMainActivity();
@@ -113,7 +105,6 @@ public class LoginActivity extends AppCompatActivity {
         startActivity(intent);
         //We don't want to let the user return to this activity by pressing the back button,so we kill it.
         finish();
-
     }
 
 

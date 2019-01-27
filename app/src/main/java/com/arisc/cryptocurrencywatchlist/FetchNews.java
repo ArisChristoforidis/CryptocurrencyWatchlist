@@ -41,6 +41,7 @@ public class FetchNews extends AsyncTask<String,Void,List<NewsEntry>> {
 
         String newsJSON;
 
+        //We are searching for cryptocurrency news only.
         final String keyword = "cryptocurrency";
 
         //TODO:Check if this works correctly.
@@ -59,8 +60,6 @@ public class FetchNews extends AsyncTask<String,Void,List<NewsEntry>> {
         final String fromParam = "from";
         final String pageSizeParam = "pagesize";
         final String apiKeyParam = "apiKey";
-
-
 
         try {
             Uri builtUri = Uri.parse(baseUrl).buildUpon()

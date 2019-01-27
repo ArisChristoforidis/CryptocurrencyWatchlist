@@ -18,9 +18,7 @@ public class GoogleSignInManager {
 
     public static GoogleSignInClient createGoogleSignInClient(Context context){
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build();
-
         mGoogleSignInClient = GoogleSignIn.getClient(context,gso);
-
         return mGoogleSignInClient;
     }
 
@@ -29,6 +27,7 @@ public class GoogleSignInManager {
     }
 
     public static UserAccount getSignedAccount() {
+        //I noticed that the signed account is used a lot, so I created a getter for it.
         if(mSignedAccount == null) Log.d(TAG,"getSignedAccount attempted to return null");
         return GoogleSignInManager.mSignedAccount;
     }

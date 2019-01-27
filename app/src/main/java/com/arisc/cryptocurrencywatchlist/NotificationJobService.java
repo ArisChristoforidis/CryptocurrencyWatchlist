@@ -32,8 +32,6 @@ public class NotificationJobService extends JobService implements CoinListReceiv
     CoinAlertDao mCoinAlertDao;
     List<CoinAlert> mAlerts;
 
-    private ServiceCallback mServiceCallback;
-
     @Override
     public boolean onStartJob(JobParameters params) {
         Log.d(TAG,"Job started.");
@@ -42,11 +40,15 @@ public class NotificationJobService extends JobService implements CoinListReceiv
     }
 
     private void doBackgroundWork(JobParameters params){
+        /*We are checking alerts for all users.We change it here to show alerts only for the user
+        with the most recent sign in.*/
         mDaoSession = ((App)getApplication()).getDaoSession();
         mCoinAlertDao = mDaoSession.getCoinAlertDao();
         mAlerts = mCoinAlertDao.loadAll();
 
+        //Only run if there are alerts.
         if(mAlerts.size() > 0){
+            //Reusing FetchCoinListings because we can.
             mFetchCoinListings = new FetchCoinListings(this);
             mFetchCoinListings.execute();
         }
@@ -67,27 +69,28 @@ public class NotificationJobService extends JobService implements CoinListReceiv
     public void onCoinListReceived(List<CoinListing> coinListings) {
         List<String> messages = new ArrayList<>();
 
+        /*Find the coinListings that correspond to our alerts and check if the price is is out of the
+        alert limits.If it is,add it to the messages list.*/
         for(CoinAlert alert : mAlerts){
             for(CoinListing coinListing : coinListings){
                 if(alert.getCoinId().equals(coinListing.getSymbol())){
-                    Log.d(TAG,"CoinListing Price:" +coinListing.getPrice());
-                    Log.d(TAG,"Upper:" + alert.getUpperLimit());
-                    Log.d(TAG,"Lower:" + alert.getLowerLimit());
                     boolean exceedsLower = coinListing.getPrice() < alert.getLowerLimit();
                     boolean exceedsUpper = coinListing.getPrice() > alert.getUpperLimit();
+                    //Alert is activated here.
                     if(exceedsLower || exceedsUpper){
-                        //Make notification etc.
-                        //message = alert.getAlertTitle() + ":" + alert.getCoinId() + " value is $" + coinListing.getPrice();
                         messages.add(alert.getAlertTitle());
-
+                        //If the alert is triggered,delete it.
                         mCoinAlertDao.delete(alert);
-                        GoogleSignInManager.getSignedAccount().getAlerts().remove(alert);
                     }
                     break;
                 }
             }
         }
 
+        /*We need to stich the alerts together,because google doesn't want us sending multiple notifications
+        on a short time.So we send 1 notification.On newer android versions there are more notification
+        layouts that allow us to add more information but since I want to support older versions I am using
+        a very simple notification layout.*/
         String finalMessage = "";
         if(messages.size() == 0){
             return;
@@ -115,11 +118,8 @@ public class NotificationJobService extends JobService implements CoinListReceiv
         NotificationManagerCompat notificationManager=  NotificationManagerCompat.from(this);
         notificationManager.notify(getNotificationId(),builder.build());
 
-        if(mServiceCallback != null){
-            mServiceCallback.onAlertActivated();
-        }
-
-
+        /*If the user has the app open and the jobService runs,we need to update the AlertListFragment.
+        We do this using a localBroadCastManager.*/
         Intent alertListIntent = new Intent("update_list");
         LocalBroadcastManager.getInstance(this).sendBroadcast(alertListIntent);
 
@@ -135,22 +135,12 @@ public class NotificationJobService extends JobService implements CoinListReceiv
             // or other notification behaviors after this
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
-
         }
     }
 
     int getNotificationId(){
+        //This may be wrong.
         mNotificationId += 1;
         return mNotificationId;
-    }
-
-    public class LocalBinder extends Binder{
-        NotificationJobService getService(){
-            return NotificationJobService.this;
-        }
-    }
-
-    public interface ServiceCallback{
-        void onAlertActivated();
     }
 }

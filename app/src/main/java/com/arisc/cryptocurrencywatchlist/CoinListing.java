@@ -12,6 +12,8 @@ import java.util.List;
 
 public class CoinListing implements Parcelable {
 
+    //A bunch of getters/setters.Nothing to see here,move along.
+
     private final String TAG = "CoinListing";
 
     private String mId;
@@ -28,13 +30,8 @@ public class CoinListing implements Parcelable {
     private Double mChangePercent24Hr;
     private Double mVwap24Hr;
 
-
-
     private Double mChangeHourly;
     private Double mChangeDaily;
-
-
-
     private Double mChangeWeekly;
     private Double mChangeMonthly;
 
@@ -43,6 +40,7 @@ public class CoinListing implements Parcelable {
     private List<HistoricalDataEntry> mLastWeekData;
     private List<HistoricalDataEntry> mLastMonthData;
 
+    //This ended up not being used,I might implement it when I have time.
     private Double mMostRecentChange;
 
     public CoinListing(){}
@@ -203,10 +201,12 @@ public class CoinListing implements Parcelable {
         this.mLastMonthData = lastMonthData;
     }
 
+    //TODO:Implement when you can.
     public Double getMostRecentChange() {
         return mMostRecentChange;
     }
 
+    //TODO:Implement when you can.
     public void setMostRecentChange(double mostRecentChange) {
         this.mMostRecentChange = mostRecentChange;
     }
@@ -214,7 +214,7 @@ public class CoinListing implements Parcelable {
 
 
     private CoinListing(Parcel in){
-
+       //This object needs to implement parcelable behaviour.
        mId = in.readString();
        mRank = in.readInt();
        mSymbol = in.readString();
@@ -248,6 +248,7 @@ public class CoinListing implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        //This object needs to implement parcelable behaviour.
         dest.writeString(mId);
         dest.writeInt(mRank);
         dest.writeString(mSymbol);
@@ -270,7 +271,6 @@ public class CoinListing implements Parcelable {
 
     }
 
-
     public static final Parcelable.Creator<CoinListing> CREATOR = new Parcelable.Creator<CoinListing>(){
 
         @Override
@@ -285,13 +285,10 @@ public class CoinListing implements Parcelable {
     };
 }
 
+//Comparators for the different sort options.
 class RankComparator implements Comparator<CoinListing>{
-
-    private static final String TAG = "RankComparator";
-
     @Override
     public int compare(CoinListing o1, CoinListing o2) {
-        Log.d(TAG,"Comparing "  + o1.getRank() + "," + o2.getRank() + ":" + Integer.compare(o1.getRank(),o2.getRank()));
         return Integer.compare(o1.getRank(),o2.getRank());
     }
 }
@@ -315,15 +312,11 @@ class PriceComparator implements Comparator<CoinListing>{
         }else if(o1.getPrice() == null && o2.getPrice() == null){
             return 0;
         }
-
         return Double.compare(o1.getPrice(),o2.getPrice());
     }
 }
 
 class ChangeComparator implements Comparator<CoinListing>{
-
-    private static final String TAG = "ChangeComparator";
-
     @Override
     public int compare(CoinListing o1, CoinListing o2) {
         if(o1.getChangePercent24Hr() == null && o2.getChangePercent24Hr() != null){
@@ -333,13 +326,8 @@ class ChangeComparator implements Comparator<CoinListing>{
         }else if(o1.getChangePercent24Hr() == null && o2.getChangePercent24Hr() == null){
             return 0;
         }
-
         BigDecimal a = new BigDecimal(o1.getChangePercent24Hr());
         BigDecimal b = new BigDecimal(o2.getChangePercent24Hr());
-
         return a.compareTo(b);
-
-        //Log.d(TAG,o1.getChangePercent24Hr() + ">" + o2.getChangePercent24Hr() + ":" + Double.compare(o1.getChangePercent24Hr(),o2.getChangePercent24Hr()));
-        //return Double.compare(o1.getChangePercent24Hr(),o2.getChangePercent24Hr());
     }
 }

@@ -34,12 +34,13 @@ public class FetchHistoricalData extends AsyncTask <CoinDetailsActivity.Interval
 
     @Override
     protected FetchHistoricalDataWrapper doInBackground(CoinDetailsActivity.Interval... interval) {
-
+        //This fetches the historical data for a specific coin for a specific interval(e.g. Week)
         FetchHistoricalDataWrapper wrapper = new FetchHistoricalDataWrapper(interval[0]);
 
         Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
 
         Calendar calendar = Calendar.getInstance();
+        //By default, pick one value per day.
         String intervalParameter = "d1";
 
         switch(interval[0]){
@@ -70,12 +71,12 @@ public class FetchHistoricalData extends AsyncTask <CoinDetailsActivity.Interval
 
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
-        //Dirty but its only one value I guess.
+
         String baseUrl = "https://api.coincap.io/v2/assets/" + mCoinId + "/history";
 
         try {
 
-            Uri builtURI =Uri.parse(baseUrl).buildUpon().
+            Uri builtURI = Uri.parse(baseUrl).buildUpon().
                     appendQueryParameter("interval",intervalParameter).
                     appendQueryParameter("start",strPeriodStartTimestamp).
                     appendQueryParameter("end",strPeriodEndTimestamp).build();
@@ -105,6 +106,8 @@ public class FetchHistoricalData extends AsyncTask <CoinDetailsActivity.Interval
 
             String JSONString = buffer.toString();
 
+            /*We create this wrapper so that whoever uses this class knows the interval of the returned
+            data.*/
             wrapper.setDataEntries(getHistoricalDataFromJSON(JSONString));
             return wrapper;
 
@@ -130,8 +133,6 @@ public class FetchHistoricalData extends AsyncTask <CoinDetailsActivity.Interval
                 }
             }
         }
-
-
     }
 
     private List<HistoricalDataEntry> getHistoricalDataFromJSON(String jsonString) throws JSONException {
@@ -162,9 +163,7 @@ public class FetchHistoricalData extends AsyncTask <CoinDetailsActivity.Interval
             data.add(hde);
         }
 
-
         return data;
-
     }
 
 
@@ -175,7 +174,7 @@ public class FetchHistoricalData extends AsyncTask <CoinDetailsActivity.Interval
 
 
     public class FetchHistoricalDataWrapper{
-
+        //In addition to the entries,this wrapper holds the corresponding interval.
         private List<HistoricalDataEntry> mDataEntries;
         private CoinDetailsActivity.Interval mInterval;
 

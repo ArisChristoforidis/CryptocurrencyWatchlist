@@ -28,6 +28,10 @@ public class Utils {
     public static String doubleToString(Double number){
         if(number == null) return "N/A";
 
+        /*Some numbers are way to small so they appear as 0 which is not desirable.Other numbers
+        are way too big so decimals don't matter that much.I didn't find any better way to do
+        this so I am basically setting the fraction digits of a number depending on its value.Possibly
+        could have been done better if I had the time.*/
         if(number > 10){
             decimalFormatPattern.setMinimumFractionDigits(2);
             decimalFormatPattern.setMaximumFractionDigits(2);
@@ -45,21 +49,9 @@ public class Utils {
             decimalFormatPattern.setMinimumFractionDigits(10);
             decimalFormatPattern.setMaximumFractionDigits(10);
         }
-
-
-
         return decimalFormatPattern.format(number);
     }
 
-
-    /*
-    public static DecimalFormat getFormat(){
-        DecimalFormat decimalFormat  = decimalFormatPattern;
-        decimalFormat.setMaximumFractionDigits(4);
-        return decimalFormat;
-
-    }
-    */
 
     public static DecimalFormat getPercentageChangeDecimalFormat() {
         return percentageChangeDecimalFormatPattern;

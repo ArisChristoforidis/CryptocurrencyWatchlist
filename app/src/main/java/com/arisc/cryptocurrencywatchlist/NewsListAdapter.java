@@ -26,7 +26,6 @@ public class NewsListAdapter extends RecyclerView.Adapter<NewsListAdapter.NewsLi
     public NewsListViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.news_list_item,parent,false);
         NewsListViewHolder vh = new NewsListViewHolder(itemView,parent.getContext());
-
         return vh;
     }
 
@@ -74,22 +73,28 @@ public class NewsListAdapter extends RecyclerView.Adapter<NewsListAdapter.NewsLi
         }
 
         public void setValues(NewsEntry newsEntry) {
+            //Title.
             String title = newsEntry.getTitle();
             mTtxtTitle.setText(title);
 
+            //Author.
             String author = newsEntry.getAuthor();
             mTxtAuthor.setText(author);
 
+            //Description.
             String description = newsEntry.getDescription();
             mTxtDescription.setText(description);
 
+            //Source.
             String source = "Source: " + newsEntry.getSource();
             mTxtSource.setText(source);
 
+            //Image url.
             String imageUrl = newsEntry.getImageUrl();
             Uri uri = Uri.parse(imageUrl);
             Picasso.get().load(uri).fit().into(mImgNews);
 
+            //Source url.
             mUrl = newsEntry.getUrl();
         }
 

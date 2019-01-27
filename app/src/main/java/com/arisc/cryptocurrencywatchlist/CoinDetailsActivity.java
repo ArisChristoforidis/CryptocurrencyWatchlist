@@ -52,21 +52,16 @@ public class CoinDetailsActivity extends AppCompatActivity implements AlertDialo
     private LineChart mLineChart;
     private Interval mSelectedInterval = Interval.MONTH;
 
-
     ImageView mSaveCoinButton;
     private boolean mIsCoinSaved,mInitialSaveState;
     private SavedCoinDao mSavedCoinDao;
     private QueryBuilder<SavedCoin> mSavedCoinQueryBuilder;
 
-    private FloatingActionButton mFab;
-
     private UserAccount mSignedInAccount;
     private List<CoinAlert> mCoinAlerts;
-    private RecyclerView mAlertCoinsListView;
     private AlertListViewAdapter mAdapter;
 
     private TextView mSelectedChartOption;
-
     private TextView txtDChange1Hr, txtDChange24Hr, txtDChange1Week, txtDChange1Month;
 
     @Override
@@ -76,36 +71,43 @@ public class CoinDetailsActivity extends AppCompatActivity implements AlertDialo
         Toolbar toolbar = findViewById(R.id.coinDetailsToolBar);
         setSupportActionBar(toolbar);
 
+        //Get coinListing data from previous activity.
         Intent intent = getIntent();
         mCoinListing = intent.getParcelableExtra(CoinListFragment.EXTRA_COINDATA);
 
+        //Get the signed account.This is used quite a lot so we get it once here.
         mSignedInAccount = GoogleSignInManager.getSignedAccount();
 
+        //Save button.
         setupSaveButton();
 
+        //"General information" textViews.
         setupInformationTextViews();
 
+        //Line chart.
         mLineChart = findViewById(R.id.lcHistData);
         setupLineChart();
-
-        setupFloatingActionButton();
-
-        setupRecyclerView();
-        setAlertList();
-
-        fetchData();
-
-
         setupChartControls();
 
+        //Fetch historical data.
+        fetchData();
+
+        //"Create alert" FAB.
+        setupFloatingActionButton();
+
+        //Alerts list.
+        setupAlertRecyclerView();
+        setAlertList();
     }
 
     private void fetchData() {
+        //Download the historical data.
         txtDChange1Hr = findViewById(R.id.txtDChange1Hr);
         txtDChange24Hr = findViewById(R.id.txtDChange24Hr);
         txtDChange1Week = findViewById(R.id.txtDChange1Week);
         txtDChange1Month = findViewById(R.id.txtDChange1Month);
 
+        //Should the historical data be downloaded?
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         boolean forceLoad = preferences.getBoolean("forceGraphLoad",true);
 
@@ -130,6 +132,7 @@ public class CoinDetailsActivity extends AppCompatActivity implements AlertDialo
         if (mCoinListing.getLastMonthData().size() == 0 || forceLoad) {
             new FetchHistoricalData(this, mCoinListing.getId()).execute(Interval.MONTH);
         } else {
+            //This is for the case where we return to the same coin after having saved historical data.
             mSelectedChartOption = findViewById(R.id.txtChartChange1Month);
             highlightChartOption();
             setLineChartData();
@@ -139,11 +142,13 @@ public class CoinDetailsActivity extends AppCompatActivity implements AlertDialo
         setupChangeTextView(txtDChange24Hr, mCoinListing.getChangeDaily());
         setupChangeTextView(txtDChange1Week, mCoinListing.getChangeWeekly());
         setupChangeTextView(txtDChange1Month, mCoinListing.getChangeMonthly());
-
-
     }
 
     private void setupChartControls() {
+        /*Initialize the "Hour/Day/Week/Month" chart controls.When I started implementing this part
+        I wanted to use radio buttons but their styling is quite hard so I resorted to textViews and
+        it turned out really nice.Their behaviour is basically the same to that of a radio button in
+        a radio button group.*/
         TextView txtHour = findViewById(R.id.txtChartChange1Hour);
         TextView txtDay = findViewById(R.id.txtChartChange1Day);
         TextView txtWeek = findViewById(R.id.txtChartChange1Week);
@@ -155,12 +160,25 @@ public class CoinDetailsActivity extends AppCompatActivity implements AlertDialo
         txtMonth.setOnClickListener(this);
     }
 
+    private void highlightChartOption() {
+        if (mSelectedChartOption == null) return;
+        mSelectedChartOption.setTextColor(getResources().getColor(R.color.colorAccent));
+    }
+
+    private void unhighlightChartOption() {
+        if (mSelectedChartOption == null) return;
+        mSelectedChartOption.setTextColor(getResources().getColor(android.R.color.black));
+    }
+
     @Override
     public void onClick(View v) {
         //Check if user has already selected this option.
         if (v.getId() == mSelectedChartOption.getId()) return;
 
+        //Stop highlighting the old chart option.
         unhighlightChartOption();
+
+        //Find the correct interval.
         switch (v.getId()) {
             case R.id.txtChartChange1Hour:
                 mSelectedInterval = Interval.HOUR;
@@ -177,7 +195,9 @@ public class CoinDetailsActivity extends AppCompatActivity implements AlertDialo
         }
 
         mSelectedChartOption = (TextView) v;
+        //Highlight the new option.
         highlightChartOption();
+        //Set the correct data to the chart.
         setLineChartData();
     }
 
@@ -195,66 +215,47 @@ public class CoinDetailsActivity extends AppCompatActivity implements AlertDialo
         }
     }
 
-    private void highlightChartOption() {
-        if (mSelectedChartOption == null) return;
-
-        mSelectedChartOption.setTextColor(getResources().getColor(R.color.colorAccent));
-    }
-
-    private void unhighlightChartOption() {
-        if (mSelectedChartOption == null) return;
-
-        mSelectedChartOption.setTextColor(getResources().getColor(android.R.color.black));
-    }
-
     private void setupSaveButton() {
-        //Check if it is saved.
+        //Check if the coin is saved.
         DaoSession daoSession = ((App) getApplication()).getDaoSession();
         mSavedCoinDao = daoSession.getSavedCoinDao();
 
         mSavedCoinQueryBuilder = mSavedCoinDao.queryBuilder();
-        SavedCoin savedCoin;
         Long userId = mSignedInAccount.getId();
         mSavedCoinQueryBuilder.where(SavedCoinDao.Properties.MCoinId.eq(mCoinListing.getId()), SavedCoinDao.Properties.UserAccountId.eq(userId));
-        savedCoin = mSavedCoinQueryBuilder.unique();
+        /*We are expecting only one coin.If more coins come, we have a bug somewhere(Potentially
+        getting saved coins of other users.)*/
+        SavedCoin savedCoin = mSavedCoinQueryBuilder.unique();
+        mIsCoinSaved = (savedCoin != null) ? true : false;
+        mInitialSaveState = mIsCoinSaved;
 
         mSaveCoinButton = findViewById(R.id.imgSaveCoin);
-
-        if (savedCoin != null) {
-            mIsCoinSaved = true;
-        } else {
-            mIsCoinSaved = false;
-        }
-        mInitialSaveState = mIsCoinSaved;
         updateSaveButtonGraphic();
-
-
         mSaveCoinButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
                 if (mIsCoinSaved) {
+                    //Delete the saved coin.
                     mSavedCoinQueryBuilder.buildDelete().executeDeleteWithoutDetachingEntities();
                 } else {
+                    //Insert a new coin.
                     SavedCoin newCoin = new SavedCoin();
                     newCoin.setMCoinId(mCoinListing.getId());
-                    UserAccount account = GoogleSignInManager.getSignedAccount();
-                    newCoin.setUserAccountId(account.getId());
+                    newCoin.setUserAccountId(mSignedInAccount.getId());
                     mSavedCoinDao.insert(newCoin);
-
-                    account.getSavedCoins().add(newCoin);
-                    account.resetSavedCoins();
-
+                    mSignedInAccount.getSavedCoins().add(newCoin);
+                    mSignedInAccount.resetSavedCoins();
                 }
+                //Toggle boolean.
                 mIsCoinSaved = !mIsCoinSaved;
-                //TODO:Figure out if this works.
                 updateSaveButtonGraphic();
             }
         });
-
     }
 
     private void updateSaveButtonGraphic() {
+        //A simple toggle for the graphic.
         if (mIsCoinSaved) {
             mSaveCoinButton.setImageResource(R.drawable.ic_star_selected_32dp);
         } else {
@@ -263,19 +264,13 @@ public class CoinDetailsActivity extends AppCompatActivity implements AlertDialo
     }
 
     private void setupInformationTextViews() {
-
+        //For the "General Information" tab.
         String coinSymbol = mCoinListing.getSymbol();
         getSupportActionBar().setTitle(coinSymbol);
 
         String coinName = mCoinListing.getName();
         TextView txtName = findViewById(R.id.txtDCoinName);
         txtName.setText(coinName);
-
-        /*
-        TextView txtSymbol = findViewById(R.id.txtDCoinSymbol);
-        txtSymbol.setText(coinSymbol);
-        */
-
 
         //Price.
         Double price = mCoinListing.getPrice();
@@ -284,7 +279,6 @@ public class CoinDetailsActivity extends AppCompatActivity implements AlertDialo
             TextView txtPrice = findViewById(R.id.txtDCoinPrice);
             txtPrice.setText(strPrice);
         }
-
 
         DecimalFormat intFormat = new DecimalFormat("#");
         //Supply.
@@ -326,25 +320,25 @@ public class CoinDetailsActivity extends AppCompatActivity implements AlertDialo
             TextView txtCoinVwap24Hr = findViewById(R.id.txtDCoinVwap24Hr);
             txtCoinVwap24Hr.setText(coinVwap24Hr);
         }
-
-
     }
 
     private void setupFloatingActionButton() {
-        mFab = findViewById(R.id.fabAlertCreate);
+        FloatingActionButton fab = findViewById(R.id.fabAlertCreate);
 
-        mFab.setOnClickListener(new View.OnClickListener() {
+        fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //Create the dialog fragment.
                 AlertDialogFragment dialogFragment = new AlertDialogFragment();
                 Bundle args = new Bundle();
+                /*Passing the current price of the coin to the dialog fragment.This is purely a quality
+                of life addition.Before, I used to forget the current price of the coin and had to
+                close the dialog fragment to look at the price.*/
                 args.putDouble(AlertDialogFragment.priceKey, mCoinListing.getPrice());
                 dialogFragment.setArguments(args);
                 dialogFragment.show(getFragmentManager(), "tag");
-                //dialogFragment.setupViewsAndEvents();
             }
         });
-
     }
 
     private void setupChangeTextView(TextView textView, Double change) {
@@ -353,26 +347,23 @@ public class CoinDetailsActivity extends AppCompatActivity implements AlertDialo
         final int colorPositive = ContextCompat.getColor(getApplicationContext(), R.color.valuePositive);
         final int colorNegative = ContextCompat.getColor(getApplicationContext(), R.color.valueNegative);
 
-
+        //Set textView text.
         DecimalFormat decimalFormat = Utils.getPercentageChangeDecimalFormat();
+        String strChange = decimalFormat.format(change) + "%";
+        textView.setText(strChange);
 
-        String strChange = decimalFormat.format(change);
-
-        textView.setText(strChange + "%");
-
+        //Set textView color.
         if (change > 0) {
             textView.setTextColor(colorPositive);
         } else if (change < 0) {
             textView.setTextColor(colorNegative);
         }
-
     }
 
     private Double calculateChange(List<HistoricalDataEntry> entries) {
-        Log.d(TAG, "Entries Size:" + entries.size());
         if (entries.size() < 2) return null;
 
-
+        //This is just one way of calculating change.
         HistoricalDataEntry start = entries.get(0);
         HistoricalDataEntry end = entries.get(entries.size() - 1);
         Double change = (end.getPrice() - start.getPrice()) / start.getPrice() * 100;
@@ -385,15 +376,16 @@ public class CoinDetailsActivity extends AppCompatActivity implements AlertDialo
             return;
         }
 
+        //Update the coinListing.
         updateCoinListing(wrapper.getDataEntries(), wrapper.getInterval());
 
-        //TODO:This is temp.
+        /*If it is the first fetch for this coinListing,the default selected interval is a month
+        so we set the chart to display monthly data.*/
         if (mSelectedChartOption == null && wrapper.getInterval() == Interval.MONTH) {
             mSelectedChartOption = findViewById(R.id.txtChartChange1Month);
             highlightChartOption();
             setLineChartData();
         }
-
     }
 
     private void updateCoinListing(List<HistoricalDataEntry> historicalDataEntries, Interval interval) {
@@ -404,13 +396,11 @@ public class CoinDetailsActivity extends AppCompatActivity implements AlertDialo
             case HOUR:
                 mCoinListing.setLastHourData(historicalDataEntries);
                 mCoinListing.setChangeHourly(calculateChange(historicalDataEntries));
-
                 setupChangeTextView(txtDChange1Hr, mCoinListing.getChangeHourly());
                 break;
             case DAY:
                 mCoinListing.setLastDayData(historicalDataEntries);
                 mCoinListing.setChangeDaily(calculateChange(historicalDataEntries));
-
                 setupChangeTextView(txtDChange24Hr, mCoinListing.getChangeDaily());
                 break;
             case WEEK:
@@ -420,34 +410,35 @@ public class CoinDetailsActivity extends AppCompatActivity implements AlertDialo
             case MONTH:
                 mCoinListing.setLastMonthData(historicalDataEntries);
                 mCoinListing.setChangeMonthly(calculateChange(historicalDataEntries));
-
                 setupChangeTextView(txtDChange1Month, mCoinListing.getChangeMonthly());
                 break;
         }
-
     }
 
     private void setupLineChart() {
+        //This method initializes data-independent properties of the chart.
+
         mLineChart.setNoDataText("Loading historical data...");
-        int color = getResources().getColor(R.color.valuePositive);
+        int color = ContextCompat.getColor(getApplicationContext(),R.color.valuePositive);
         mLineChart.setNoDataTextColor(color);
 
-        //Marker.
+        /*Marker.Uncomment if you want the chart to display the price of a touched
+        point.I wrote the code but I didn't like the styling of the marker so I turned it off.*/
         /*
         CustomMarker marker = new CustomMarker(getApplicationContext(), R.layout.custom_marker);
         marker.setChartView(mLineChart);
         mLineChart.setMarker(marker);
         */
 
+        //We just need a simple display.
         mLineChart.setFocusable(false);
         mLineChart.setPinchZoom(false);
         mLineChart.setDoubleTapToZoomEnabled(false);
         mLineChart.setScaleEnabled(false);
 
-        XAxis xAxis = mLineChart.getXAxis();
         //Place the X axis on the bottom.
+        XAxis xAxis = mLineChart.getXAxis();
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-
 
         //Disable the right Y Axis.
         YAxis yAxisRight = mLineChart.getAxisRight();
@@ -457,7 +448,6 @@ public class CoinDetailsActivity extends AppCompatActivity implements AlertDialo
         YAxis yAxisLeft = mLineChart.getAxisLeft();
         yAxisLeft.setValueFormatter(new YAxisFormatter());
 
-
         //Disable description.
         Description chartDescription = mLineChart.getDescription();
         chartDescription.setEnabled(false);
@@ -465,7 +455,6 @@ public class CoinDetailsActivity extends AppCompatActivity implements AlertDialo
         //Disable legend.
         Legend chartLegend = mLineChart.getLegend();
         chartLegend.setEnabled(false);
-
     }
 
     private Double getChange(){
@@ -490,10 +479,11 @@ public class CoinDetailsActivity extends AppCompatActivity implements AlertDialo
     public void setLineChartData() {
 
         List<HistoricalDataEntry> historicalDataEntries = getSelectedData();
-        Double change = getChange();
 
-
+        /*If the selected coinListing has no data available,display an appropriate message where the
+        chart should be.*/
         if (historicalDataEntries.size() == 0) {
+            //This is kind of a hack but it works.
             mLineChart.setNoDataText("No data.");
             mLineChart.setData(null);
             mLineChart.invalidate();
@@ -506,28 +496,33 @@ public class CoinDetailsActivity extends AppCompatActivity implements AlertDialo
         }
 
         LineDataSet dataSet = new LineDataSet(data, "Line Graph");
+
+        /*Keep the diagram minimal.(For some reason these are LineDataSet options when it would be more
+        logical to be chart options.*/
         dataSet.setDrawCircles(false);
         dataSet.setDrawValues(false);
-        //Line Styling.
+
+        //Line and gradient styling.
         dataSet.setMode(LineDataSet.Mode.CUBIC_BEZIER);
         dataSet.setLineWidth(2);
         int lineColor;
         Drawable drawable;
 
+        /*The line/gradient color is chosen based on whether the change for the selected interval is
+        positive or negative.*/
+        Double change = getChange();
         if (change == null) change = 0.0;
 
         if (change >= 0) {
-            lineColor = getResources().getColor(R.color.valuePositive);
+            lineColor = ContextCompat.getColor(getApplicationContext(),R.color.valuePositive);
             //Gradient below the line.
             drawable = ContextCompat.getDrawable(this, R.drawable.gradient_positive);
-
         } else {
-            lineColor = getResources().getColor(R.color.valueNegative);
+            lineColor = ContextCompat.getColor(getApplicationContext(),R.color.valueNegative);
             drawable = ContextCompat.getDrawable(this, R.drawable.gradient_negative);
         }
 
-
-        //Drawable styling.
+        //Drawable styling.This gives us the green/red fade effect below the line.
         dataSet.setDrawFilled(true);
         dataSet.setFillDrawable(drawable);
 
@@ -547,65 +542,65 @@ public class CoinDetailsActivity extends AppCompatActivity implements AlertDialo
         mLineChart.invalidate();
         //Add a simple animation.
         mLineChart.animateX(600, Easing.EaseInOutSine);
-
-
     }
 
-    private void setupRecyclerView() {
-        mAlertCoinsListView = findViewById(R.id.alertListD);
+    private void setupAlertRecyclerView() {
+        RecyclerView alertsRecyclerView = findViewById(R.id.alertListD);
 
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
-
-        mAlertCoinsListView.setLayoutManager(linearLayoutManager);
+        alertsRecyclerView.setLayoutManager(linearLayoutManager);
 
         mAdapter = new AlertListViewAdapter(this);
-        mAlertCoinsListView.setAdapter(mAdapter);
+        alertsRecyclerView.setAdapter(mAdapter);
     }
 
     @Override
     public void onAlertCreated(String alertTitle, String lowerLimit, String upperLimit) {
-        //Parse values correctly.
+        //Parse values of the newly created alert,create the object and handle its relations appropriately.
+
+        //Title.
         String title;
-        if (alertTitle.isEmpty()) {
-            title = "New alert";
-        } else {
-            title = alertTitle;
-        }
+        title = (alertTitle.isEmpty()) ? "New alert" : alertTitle;
 
-        String id = mCoinListing.getSymbol();
-
+        //Lower limit.
         Double lLimit = -Double.MAX_VALUE;
         if (lowerLimit.length() > 0) {
             lLimit = Double.valueOf(lowerLimit);
         }
 
-
+        //Upper limit.
         Double uLimit = Double.MAX_VALUE;
         if (upperLimit.length() > 0) {
             uLimit = Double.valueOf(upperLimit);
         }
 
-        mCoinAlerts = mSignedInAccount.getAlerts();
+        //Id.
+        String id = mCoinListing.getSymbol();
 
+        //Create the object.
         CoinAlert newAlert = new CoinAlert();
         newAlert.setAlertTitle(title);
         newAlert.setCoinId(id);
         newAlert.setLowerLimit(lLimit);
         newAlert.setUpperLimit(uLimit);
-
         newAlert.setUserAccountId(mSignedInAccount.getId());
 
+        //Insert into database.
         DaoSession daoSession = ((App) getApplication()).getDaoSession();
         daoSession.insert(newAlert);
 
+        //Insert to the list.(The list is not updated automatically).
         mCoinAlerts.add(newAlert);
         setAlertList();
-
     }
 
     @Override
     public void onAlertDelete(int position) {
         CoinAlert coinAlertToDelete = mCoinAlerts.get(position);
+        /*We need to delete the alert twice,once from the dao and once from the list.This is due to
+        greenDao caching the table when we call alertDao.getAlerts() and actually returning us the initial
+        cached version on consecutive calls(unless we reset the cached list).That means that deleting
+         it from the dao won't be enough.More here: http://greenrobot.org/greendao/documentation/relations/*/
         ((App) getApplication()).getDaoSession().delete(coinAlertToDelete);
         mCoinAlerts = mSignedInAccount.getAlerts();
         mCoinAlerts.remove(coinAlertToDelete);
@@ -613,23 +608,21 @@ public class CoinDetailsActivity extends AppCompatActivity implements AlertDialo
     }
 
     private void setAlertList() {
-
-        Query<CoinAlert> query = null;
         DaoSession daoSession = ((App) getApplication()).getDaoSession();
         String coinId = mCoinListing.getSymbol();
         Long userId = mSignedInAccount.getId();
-        query = daoSession.getCoinAlertDao().queryBuilder().where(CoinAlertDao.Properties.CoinId.eq(coinId), CoinAlertDao.Properties.UserAccountId.eq(userId)).build();
 
+        //Get all alerts that the signed user configured(for this coin only).
+        Query<CoinAlert> query = daoSession.getCoinAlertDao().queryBuilder().where(CoinAlertDao.Properties.CoinId.eq(coinId), CoinAlertDao.Properties.UserAccountId.eq(userId)).build();
         mCoinAlerts = query.list();
-
         mAdapter.setData(mCoinAlerts);
     }
 
     class YAxisFormatter implements IAxisValueFormatter {
 
-
         @Override
         public String getFormattedValue(float value, AxisBase axis) {
+            //This ensures that the values on the Y axis are displayed properly.
             String result = "$" + Utils.doubleToString(Double.valueOf(value));
             return result;
         }
@@ -637,10 +630,10 @@ public class CoinDetailsActivity extends AppCompatActivity implements AlertDialo
 
     static class XAxisFormatter implements IAxisValueFormatter {
 
-
         private SimpleDateFormat mFormat;
 
         public XAxisFormatter(Interval interval) {
+            //Handling the possible patterns of the x Axis.
             switch (interval) {
                 case HOUR:
                     mFormat = new SimpleDateFormat("HH:mm");
@@ -668,17 +661,13 @@ public class CoinDetailsActivity extends AppCompatActivity implements AlertDialo
 
     @Override
     public void onBackPressed() {
-        //TODO:Implement this as an option?
-        /*Update the mirrored coinListing on the CoinListFragment.
-        This feature doesn't actually do anything.The idea was that if the data is downloaded
-        once for a coin,we don't need to download it again every time we open the activity.Unfortunately,
-        this means that the line chart will lag in its animation because it attempts to load the data
-        right on the activity start,when the device is under heavy load for a few milliseconds.
-        Of course we can add checks on the onCreate method(e.g. if(mCoinListing.getLastHourData().isEmpty()))
-        to prevent the async task from running multiple times and save mobile data.*/
+        /*When we return from the coinDetailsActivity to the MainActivity(specifically on the coinListFragment) we
+        save the historical data on the appropriate coinListing so that when the user clicks the same
+        coin again we load it from the saved state,instead of re-downloading it.This is done to
+        potentially save mobile data and it can be turned off in the settings menu.*/
         Intent intent = new Intent();
         intent.putExtra(EXTRA_UPDATEDCOINLISTING, mCoinListing);
-
+        //We also inform the coinListing of a potential change in its saved status.
         if(mIsCoinSaved != mInitialSaveState){
             intent.putExtra(EXTRA_CHANGEDSAVESTATUS,true);
         }else{
@@ -688,6 +677,5 @@ public class CoinDetailsActivity extends AppCompatActivity implements AlertDialo
         super.onBackPressed();
 
     }
-
 
 }

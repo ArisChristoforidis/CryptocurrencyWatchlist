@@ -9,6 +9,8 @@ import android.view.MotionEvent;
 import android.view.View;
 
 public class RecyclerTouchListener implements RecyclerView.OnItemTouchListener {
+    /*Used to see which item is selected on the coinList.Not much creativity here,just following
+    the tutorials.*/
 
     private static final String TAG = "RecyclerTouchListener";
 
@@ -36,12 +38,8 @@ public class RecyclerTouchListener implements RecyclerView.OnItemTouchListener {
     }
 
     @Override
-    public void onTouchEvent(RecyclerView rv, MotionEvent e) {
-
-    }
+    public void onTouchEvent(RecyclerView rv, MotionEvent e) {}
 
     @Override
-    public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {
-
-    }
+    public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {}
 }
